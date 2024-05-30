@@ -41,7 +41,7 @@ const HouseList = () => {
         <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-14'>
           {currentHouses.map((house, index) => {
             return (
-              <Link to={`/housedetails/${house.meta_code}`} key={index}> 
+              <Link to={`/house-details/${house.meta_code}`} key={index}> 
                 <House house={house} />
               </Link>
             );

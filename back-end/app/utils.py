@@ -6,8 +6,8 @@ def assign_group(data):
     age = int(data['age'])
     marital_status = int(data['is_married'])
     no_child = int(data['no_child'])
-    # month_income = int(data['month_income'].replace(',', ''))
-    month_income = int(data['month_income'])
+    month_income = int(data['month_income'].replace(',', ''))
+    # month_income = int(data['month_income'])
     
     if 25 <= age <= 32 and marital_status == 0 and no_child == 0 and month_income > 20000000:
         return 1

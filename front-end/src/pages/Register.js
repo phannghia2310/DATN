@@ -9,7 +9,9 @@ import { IconButton } from "@mui/material";
 import { BiShow, BiHide } from "react-icons/bi";
 import { ImSpinner2 } from "react-icons/im";
 
-const Login = () => {
+import { RegisterUser } from "../api/userApi";
+
+const Register = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [emailOrPhoneError, setEmailOrPhoneError] = useState('Vui lòng nhập email hoặc số điện thoại');
   const [password, setPassword] = useState('');
@@ -21,7 +23,6 @@ const Login = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  let count = 0;
 
   const handlePassword = () => {
     setShowPassword(!showPassword);
@@ -51,51 +52,68 @@ const Login = () => {
   const validateRegister = () => {
     setIsSubmitted(true);
 
+    let valid = true;
+
     // check email or phone is correct
     const phoneRegex = /^(0|\+84)(3[2-9]|5[2689]|7[06-9]|8[1-9]|9\d)\d{7}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if(!emailOrPhone) {
       setEmailOrPhoneError('Vui lòng nhập email hoặc số điện thoại');
+      valid = false;
     } else if (!phoneRegex.test(emailOrPhone) && !emailRegex.test(emailOrPhone)) {
       setEmailOrPhoneError('Email hoặc số điện thoại không hợp lệ');
+      valid = false;
     } else {
-      count++;
       setEmailOrPhoneError('');
     }
 
     //check password is correct
     if(!password) {
       setPasswordError('Vui lòng nhập mật khẩu');
+      valid = false;
     }
     else if (!validation.meetsRequirement) {
       setPasswordError('Mật khẩu chưa đáp ứng đủ diều kiện');
+      valid = false;
     }
     else {
-      count++;
       setPasswordError('');
     }
 
     //check re-password is correct
     if(!rePassword) {
       setRePasswordError('Vui lòng nhập lại mật khẩu');
+      valid = false;
     } else if (rePassword !== password) {
       setRePasswordError('Mật khẩu không trùng khớp');
+      valid = false;
     } else {
-      count++;
       setRePasswordError('');
     }
+
+    return valid;
   }
 
-  const handleRegister = () => {
-    validateRegister();
-
-    if(count >= 3) {
-      setIsLoading(true);
-      setTimeout(() => {
-        navigate('/login');
-        setIsLoading(false);
-      });
+  const handleRegister = async () => {
+    if(validateRegister()) {
+      try { 
+        const response = await RegisterUser(emailOrPhone, password);
+        if(response.status === 200) {
+          setIsLoading(true);
+          setTimeout(() => {
+            navigate('/login');
+            setIsLoading(false);
+          }, 2000);
+        }
+      } catch (error) {
+        if(error.response && error.response.data) {
+          const message = error.response.data;
+          if (message === 'Email hoặc số điện thoại đã tồn tại') {
+            setEmailOrPhoneError(message);
+          }
+        }
+      }
     }
   };
 
@@ -275,4 +293,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

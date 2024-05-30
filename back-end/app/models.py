@@ -19,3 +19,9 @@ def create_data_model(api: Api):
         'desired_location': fields.String(required=True, description='Desired location', example='Quận 7'),
         'desired_interiorStatus': fields.String(required=True, description='Desired interior status', example='Nội thất đầy đủ')
     })
+    
+def create_account_model(api: Api):
+    return api.model('LoginModel', {
+        'emailOrPhone': fields.String(required=True, description='EmailOrPhone', example='test@gmail.com hoặc 0123456789'),
+        'password': fields.String(required=True, description='Password', example='test123')
+    })

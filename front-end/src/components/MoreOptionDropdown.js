@@ -59,19 +59,20 @@ const MoreOptionDropdown = () => {
              onClick={() => setIsOpen(!isOpen)}
              className='dropdown-btn w-full'
             >
-            <div>
-                <div className='text-[15px] font-medium leading-tight'>
-                {bedroom && direction ? `${bedroom} phòng ngủ, hướng nhà ${direction.replace(' - ', ' ')}` : 
-                    bedroom ? `${bedroom} phòng ngủ` : 
-                    direction ? `Hướng nhà ${direction.replace(' - ', ' ')}` : ''}
+                <div>
+                    <div className='text-[15px] font-medium leading-tight'>
+                    {bedroom && direction ? `${bedroom} phòng ngủ, hướng nhà ${direction.replace(' - ', ' ')}` : 
+                        bedroom ? `${bedroom} phòng ngủ` : 
+                        direction ? `Hướng nhà ${direction.replace(' - ', ' ')}` : ''}
+                    </div>
+                    <div className={bedroom || direction ? 'text-[13px]' : 'text-[15px]'}>Lọc thêm</div>
                 </div>
-                <div className={bedroom || direction ? 'text-[13px]' : 'text-[15px]'}>Lọc thêm</div>
-            </div>
-            {isOpen ? (
-             <RiArrowUpSLine className='dropdown-icon-secondary text-red-800' />
-             ) : (
-             <RiArrowDownSLine className='dropdown-icon-secondary text-red-800' />
-             )}
+                {isOpen ? (
+                 <RiArrowUpSLine className='dropdown-icon-secondary text-red-800' />
+                 ) : (
+                 <RiArrowDownSLine className='dropdown-icon-secondary text-red-800' />
+                 )
+                }
             </Menu.Button>
 
             <Menu.Items className='dropdown-menu w-72'>

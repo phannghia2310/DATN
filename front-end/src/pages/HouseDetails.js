@@ -55,7 +55,7 @@ const HouseDetails = () => {
   }, [houseDetails]);
 
   if (!houseDetails) {
-    return <p>Loading...</p>;
+    return <p>Không tìm thấy ngôi nhà {houseDetails.meta_code}</p>;
   }
 
   return (

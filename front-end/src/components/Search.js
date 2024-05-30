@@ -6,7 +6,7 @@ import PropertyDropdown from './PropertyDropdown';
 import PriceRangeDropdown from './PriceRangeDropdown';
 import AreaRangeDropdown from './AreaRangeDropdown';
 import MoreOptionDropdown from './MoreOptionDropdown';
-import AdvancePopup from './AdvancePopup';
+// import AdvancePopup from './AdvancePopup';
 
 import { HouseContext } from './HouseContext';
 
@@ -42,7 +42,7 @@ const Search = () => {
           >
             <RiRestartLine />
         </button>
-        <AdvancePopup />
+        {/* <AdvancePopup /> */}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import HouseDetails from './pages/HouseDetails';
+import UserProfile from './pages/UserProfile';
 import Layout from './components/Layout';
 
 const App = () => {
@@ -13,7 +14,7 @@ const App = () => {
       <Route path='/login' element={<Login />} />
       <Route path='/register' element={<Register />} />
       <Route
-        path='/home' 
+        path='/' 
         element={
           <Layout>
             <Home />
@@ -21,13 +22,22 @@ const App = () => {
         } 
       />
       <Route 
-        path='/housedetails/:meta_code' 
+        path='/house-details/:meta_code' 
         element={
           <Layout>
             <HouseDetails />
           </Layout>
         } 
       /> 
+      <Route
+        path='/user-profile/:id'
+        element={
+          <Layout>
+            <UserProfile />
+          </Layout>
+        }
+      >
+      </Route>
     </Routes>
   );
 };

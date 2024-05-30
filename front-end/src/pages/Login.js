@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 
@@ -9,6 +9,9 @@ import { IconButton } from "@mui/material";
 import { BiShow, BiHide } from "react-icons/bi";
 import { ImSpinner2 } from "react-icons/im";
 
+import { LoginUser, GetUser } from "../api/userApi";
+import { UserContext } from "../components/UserContext";
+
 const Login = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [emailOrPhoneError, setEmailOrPhoneError] = useState('Vui lòng nhập email hoặc số điện thoại');
@@ -17,8 +20,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
-  let count = 0;
 
   const handlePassword = () => {
     setShowPassword(!showPassword);
@@ -27,37 +30,58 @@ const Login = () => {
   const validateLogin = () => {
     setIsSubmitted(true);
 
+    let valid = true;
+
     // check email or phone is correct
     const phoneRegex = /^(0|\+84)(3[2-9]|5[2689]|7[06-9]|8[1-9]|9\d)\d{7}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if(!emailOrPhone) {
       setEmailOrPhoneError('Vui lòng nhập email hoặc số điện thoại');
+      return false;
     } else if (!phoneRegex.test(emailOrPhone) && !emailRegex.test(emailOrPhone)) {
       setEmailOrPhoneError('Email hoặc số điện thoại không hợp lệ');
+      return false;
     } else {
-      count++;
       setEmailOrPhoneError('');
     }
 
     //check password is correct
     if(!password) {
       setPasswordError('Vui lòng nhập mật khẩu');
+      return false;
     } else {
-      count++;
       setPasswordError('');
     }
+
+    return valid;
   }
 
-  const handleLogin = () => {
-    validateLogin();
-
-    if(count >= 2) {
-      setIsLoading(true);
-      setTimeout(() => {
-        navigate('/home');
-        setIsLoading(false);
-      }, 2000);
+  const handleLogin = async () => {
+    if(validateLogin()) {
+      try {
+        const response = await LoginUser(emailOrPhone, password);
+        if(response.status === 200) {
+          const userResponse = await GetUser(response.data.id);
+          localStorage.setItem('user', JSON.stringify(userResponse.data));
+          setUser(userResponse.data);
+          setIsLoading(true);
+          setTimeout(() => {
+            navigate('/');
+            setIsLoading(false);
+          }, 2000);
+        }
+      } catch (error) {
+        console.log(error.response);
+        if(error.response) {
+          if (error.response.status === 400) {
+            setEmailOrPhoneError(error.response.data);
+          }
+          else if (error.response.status === 401) {
+            setPasswordError(error.response.data);
+          }
+        }
+      }
     }
   };
 
@@ -139,6 +163,13 @@ const Login = () => {
                   fontSize: "17px",
                   fontFamily: "Poppins",
                 },
+              }}
+              FormHelperTextProps={{
+                style: {
+                    color: "red",
+                    fontStyle: "italic",
+                    fontFamily: "Poppins",
+                }
               }}
             />
             <button 

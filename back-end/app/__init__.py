@@ -7,6 +7,8 @@ def create_app():
     api = Api(app)
     CORS(app, origins=['http://localhost:3000', 'http://example.com'])
     
+    app.config['UPLOAD_IMAGE'] = 'D:\\DATN\\front-end\\src\\assets\\img\\user'
+        
     from app.routes import register_routes
     register_routes(api)
     
