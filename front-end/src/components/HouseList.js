@@ -7,16 +7,16 @@ import { Pagination } from '@mui/material';
 
 const HouseList = () => {
   const itemsPerPage = 18;
-  const { houseResult, loading } = useContext(HouseContext);
+  const { housesResult, loading } = useContext(HouseContext);
   const [currentPage, setCurrentPage] = useState(1);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
-  const currentHouses = houseResult.slice(startIndex, endIndex);
+  const currentHouses = housesResult.slice(startIndex, endIndex);
 
   const handlePageChange = (event, newPage) => {
-    if (newPage >= 1 && newPage <= Math.ceil(houseResult.length / itemsPerPage)) {
+    if (newPage >= 1 && newPage <= Math.ceil(housesResult.length / itemsPerPage)) {
       setCurrentPage(newPage);
     }
   };
@@ -27,7 +27,7 @@ const HouseList = () => {
     );
   }
 
-  if (houseResult.length < 1) {
+  if (housesResult.length < 1) {
     return (
       <div className='text-center text-3xl text-gray-400 mt-48'>
         Không tìm thấy kết quả phù hợp.
@@ -49,7 +49,7 @@ const HouseList = () => {
         </div>
         <div className='m-[20px] flex justify-center'>
         <Pagination
-          count={Math.ceil(houseResult.length / itemsPerPage)}
+          count={Math.ceil(housesResult.length / itemsPerPage)}
           color="error"
           variant="outlined"
           shape="rounded"

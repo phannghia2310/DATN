@@ -25,6 +25,7 @@ const UserProfile = () => {
   const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [formValues, setFormValues] = useState({
+    id: "",
     name: "",
     age: "",
     image: "",
@@ -58,6 +59,7 @@ const UserProfile = () => {
   useEffect(() => {
     if (user) {
       setFormValues({
+        id: user.id,
         name: user.name,
         age: user.age,
         image: user.image,
@@ -87,8 +89,13 @@ const UserProfile = () => {
         ...prevValues,
         children: "0",
       }));
+    } else {
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        children: user.no_child,
+      }));
     }
-  }, [isMarried]);
+  }, [isMarried, user]);
   
   const getUserImage = (image) => {
     try {
@@ -221,7 +228,7 @@ const UserProfile = () => {
     }
 
     // desired location validation
-    if (!formValues.desired_location) {
+    if (!selectedLocation) {
       newErrors.desired_location = "Vui lòng chọn địa điểm mong muốn";
       valid = false;
     }
@@ -232,9 +239,6 @@ const UserProfile = () => {
 
   const handleUpdate = async (event) => {
     event.preventDefault();
-    validateUpdate();
-
-    console.log(validateUpdate(), errors);
     
     if(validateUpdate()) {
       const { email, phone, children, ...data } = formValues;

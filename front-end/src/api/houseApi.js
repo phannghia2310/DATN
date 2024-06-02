@@ -10,6 +10,6 @@ export const getHouseByMetaCode = (meta_code) => {
     return axios.get(`${API_URL}/get_house/${meta_code}`);
 }
 
-export const getHousesFromModel = () => {
-    return axios.get(`${API_URL}/get_house_from_model`);
+export const getHousesFromModel = (id) => {
+    return axios.get(`${API_URL}/get_houses_from_model/${id}`);
 };

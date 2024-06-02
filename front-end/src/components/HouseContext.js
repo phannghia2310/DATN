@@ -9,7 +9,7 @@ export const HouseContext = createContext();
 // provider
 const HouseContextProvider = ({ children }) => {
   const [houses, setHouses] = useState([]);
-  const [houseResult, setHouseResult] = useState([]);
+  const [housesResult, setHousesResult] = useState([]);
   const [search, setSearch] = useState("");
   const [district, setDistrict] = useState("Tất cả địa điểm");
   const [districts, setDistricts] = useState([]);
@@ -25,7 +25,7 @@ const HouseContextProvider = ({ children }) => {
     try {
       const response = await getAllHouses();
       setHouses(response.data);
-      setHouseResult(response.data);
+      setHousesResult(response.data);
       setLoading(false);
     } catch (err){
       console.error('Error fetching houses: ', err);
@@ -43,10 +43,14 @@ const HouseContextProvider = ({ children }) => {
       uniqueDistricts.unshift("Tất cả địa điểm");
       const uniqueProperties = ["Tất cả loại nhà đất", ...new Set(houses.map(house => house.house_type))];
 
-      setDistricts(uniqueDistricts);
-      setProperties(uniqueProperties);
+      if (districts.length === 0) {
+        setDistricts(uniqueDistricts);
+      }
+      if (properties.length === 0) {
+        setProperties(uniqueProperties);
+      }
     }
-  }, [houses]);
+  }, [houses, districts.length, properties.length]);
 
   const resetSearch = () => {
     setTimeout(() => {
@@ -58,7 +62,8 @@ const HouseContextProvider = ({ children }) => {
         setSearch(""),
         setBedroom(""),
         setDirection(""),
-        setLoading(false)
+        setLoading(true),
+        fetchHouses()
       );
     }, 300);
   };
@@ -2631,7 +2636,7 @@ const HouseContextProvider = ({ children }) => {
 
     setTimeout(() => {
       return (
-        newHouses.length < 1 ? setHouseResult([]) : setHouseResult(newHouses),
+        newHouses.length < 1 ? setHousesResult([]) : setHousesResult(newHouses),
         setLoading(false)
       );
     }, 1000);
@@ -2659,7 +2664,9 @@ const HouseContextProvider = ({ children }) => {
         handleClick,
         resetSearch,
         houses,
-        houseResult,
+        setHouses,
+        housesResult,
+        setHousesResult,
         fetchHouses,
         loading,
       }}

@@ -13,6 +13,8 @@ const HouseDetails = () => {
   const { houses, fetchHouses } = useContext(HouseContext);
   const [houseDetails, setHouseDetails] = useState(null);
 
+  console.log(meta_code);
+
   useEffect(() => {
     if (houses.length === 0) {
       fetchHouses();
@@ -55,7 +57,7 @@ const HouseDetails = () => {
   }, [houseDetails]);
 
   if (!houseDetails) {
-    return <p>Không tìm thấy ngôi nhà {houseDetails.meta_code}</p>;
+    return <p>Không tìm thấy ngôi nhà {meta_code}</p>;
   }
 
   return (

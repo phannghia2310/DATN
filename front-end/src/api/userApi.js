@@ -29,3 +29,7 @@ export const UploadImage = (file) => {
 export const ChangePassword = (id, password) => {
     return axios.put(`${API_URL}/change_password/${id}`, {password});
 }
+
+export const ForgotPassword = (emailOrPhone, newPassword) => {
+    return axios.put(`${API_URL}/forgot_password`, {emailOrPhone, newPassword});
+};

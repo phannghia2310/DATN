@@ -19,12 +19,12 @@ const ChangePasswordPopup = ({ user }) => {
   const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConPassword, setShowConPassword] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [conPassword, setConPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConPassword, setShowConPassword] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({
     oldPassword: "",
@@ -150,7 +150,7 @@ const ChangePasswordPopup = ({ user }) => {
           </span>
           <button
             onClick={(event) => handleClose(event)}
-            className="hover:text-red-800 hover:bg-red-100 transition duration-300 px-[5px] rounded-lg text-3xl"
+            className="hover:text-red-800 hover:bg-red-800 transition duration-300 px-[5px] rounded-lg text-3xl"
           >
             <IoMdClose />
           </button>

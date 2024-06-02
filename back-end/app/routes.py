@@ -50,33 +50,8 @@ def register_routes(api: Api):
             data_json = json.dumps(house[0], ensure_ascii=False, indent=4)
             return Response(data_json, content_type="application/json; charset=utf-8")
         
-    @api.route('/get_houses_from_model')
-    class GetHouseFromModel(Resource):
-        def get(self):
-            data_path = 'D:\\DATN\\model\\data.xlsx'
-            wb = load_workbook(filename=data_path)
-            sheet = wb['buyers']
-            
-            last_row_id = None
-            for row in sheet.iter_rows(min_row=2, max_col=1, max_row=sheet.max_row):
-                cell_value = row[0].value
-                if cell_value:
-                    last_row_id = cell_value
-                    
-            file_path = f'D:\\DATN\\model\\testOutput\\cust_{last_row_id}.xlsx'
-            
-            if not os.path.exists(file_path):
-                return Response(json.dumps({"error": "File not found"}), content_type="application/json", status=404)
-            
-            df = pd.read_excel(file_path)
-            df = df.drop(df.columns[[1, 2]], axis=1)
-            df = df.replace({np.nan: None})
-            data = df.to_dict(orient='records')
-            data_json = json.dumps(data, ensure_ascii=False, indent=4)
-            return Response(data_json, content_type="application/json; charset=utf-8")
-        
-    @api.route('/run_model/<id>')
-    class RunModel(Resource):
+    @api.route('/get_houses_from_model/<id>')
+    class GetHousesFromModel(Resource):
         def get(self, id):
             file_path = 'D:\\DATN\\model\\data.xlsx'
             notebook_path = 'D:\\DATN\\model\\callRule.ipynb'
@@ -88,10 +63,26 @@ def register_routes(api: Api):
                 if row[0].value == id:
                     row_number = row[0].row - 2
                     break
+            
+            if row_number is None:
+                return Response(json.dumps({"error": "ID not found in the buyers sheet"}), content_type="application/json", status=404)
 
             add_code_to_callRule(notebook_path, id, row_number)
             
-            return 'Run model successfully!', 200    
+            house_path = f'D:\\DATN\\model\\testOutput\\cust_{id}.xlsx'
+            
+            if not os.path.exists(house_path):
+                return Response(json.dumps({"error": "File not found"}), content_type="application/json", status=404)
+            
+            df = pd.read_excel(house_path)
+            df = df.drop(df.columns[[1, 2, 6]], axis=1)
+            df = df.replace({np.nan: None})
+            
+            df = df[df['housePerformance'] >= 70]
+            
+            data = df.to_dict(orient='records')
+            data_json = json.dumps(data, ensure_ascii=False, indent=4)
+            return Response(data_json, content_type="application/json; charset=utf-8", status=200)   
     
     @api.route('/login')
     class Login(Resource):
@@ -322,3 +313,33 @@ def register_routes(api: Api):
             wb.save(filename=file_path)
             
             return 'Changed password successfully!', 200
+        
+    @api.route('/forgot_password')
+    class ForgotPassword(Resource):
+        # @api.expect(data_model)
+        def put(self):
+            file_path = 'D:\\DATN\\model\\data.xlsx'
+            wb = load_workbook(filename=file_path)
+            buyers_info_sheet = wb['buyers_info']
+            
+            data = request.get_json()
+            
+            emailOrPhone = data.get('emailOrPhone')
+            new_password = data.get('newPassword')
+            
+            match_column = 2 if '@' in emailOrPhone else 4
+            
+            user_row = None
+            for row in buyers_info_sheet.iter_rows(min_row=2, max_row=buyers_info_sheet.max_row):
+                if row[match_column].value == emailOrPhone:
+                    user_row = row
+                    break
+                
+            if not user_row:
+                return 'Email hoặc số điện thoại không tồn tại', 400
+            else:
+                user_row[3].value = new_password
+                wb.save(filename=file_path)
+                return 'Password updated successfully', 200
+            
+            

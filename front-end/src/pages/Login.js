@@ -11,6 +11,7 @@ import { ImSpinner2 } from "react-icons/im";
 
 import { LoginUser, GetUser } from "../api/userApi";
 import { UserContext } from "../components/UserContext";
+import ForgotPasswordPopup from "../components/ForgotPasswordPopup";
 
 const Login = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -172,11 +173,7 @@ const Login = () => {
                 }
               }}
             />
-            <button 
-             className="font-medium text-base text-red-800 mt-1 mb-2"
-            >
-              Quên mật khẩu?
-            </button>
+            <ForgotPasswordPopup />
           </div>
 
           <div className="mt-2 flex flex-col gap-y-4 items-center">
