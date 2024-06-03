@@ -10,6 +10,14 @@ export const LoginUser = (emailOrPhone, password) => {
     return axios.post(`${API_URL}/login`, {emailOrPhone, password});
 };
 
+export const GoogleLoginUser = (token) => {
+    return axios.post(`${API_URL}/google_login`, {token}, {
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+};
+
 export const GetUser = (id) => {
     return axios.get(`${API_URL}/get_user/${id}`);
 };

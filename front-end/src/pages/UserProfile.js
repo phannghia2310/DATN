@@ -264,10 +264,17 @@ const UserProfile = () => {
 
         localStorage.removeItem('user');
         localStorage.setItem('user', JSON.stringify(formData));
+
+        window.location.reload();
       } catch (err) {
         console.error('Error fetching data: ', err);
-      } finally {
-        window.location.reload();
+        const newErrors = {};
+        if (err.response.data === "Email đã tồn tại") {
+          newErrors.email = "Email đã tồn tại";
+        } else {
+          newErrors.phone = "Số điện thoại đã tồn tại";
+        }
+        setErrors(newErrors);
       }
     }
   };

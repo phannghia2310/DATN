@@ -2,6 +2,9 @@ from flask import request, Response, current_app
 from flask_restx import Resource, Api
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_request
+import requests
 import pandas as pd
 import numpy as np
 import json
@@ -13,6 +16,8 @@ from app.models import create_data_model
 from app.models import create_account_model
 from app.utils import assign_group
 from app.utils import add_code_to_callRule
+
+GOOGLE_CLIENT_ID = "864707476707-u61028sfa4isftnerqaralk9df0tta05.apps.googleusercontent.com"
 
 def register_routes(api: Api):
     data_model = create_data_model(api)
@@ -79,10 +84,112 @@ def register_routes(api: Api):
             df = df.replace({np.nan: None})
             
             df = df[df['housePerformance'] >= 70]
+            df = df.sort_values(by='housePerformance', ascending=False)
             
             data = df.to_dict(orient='records')
             data_json = json.dumps(data, ensure_ascii=False, indent=4)
             return Response(data_json, content_type="application/json; charset=utf-8", status=200)   
+        
+    @api.route('/google_login')
+    class GoogleLogin(Resource):
+        def post(self):
+            file_path = 'D:\\DATN\\model\\data.xlsx'
+            wb = load_workbook(filename=file_path)
+            buyers_info_sheet = wb['buyers_info']
+            buyers_sheet = wb['buyers']
+            
+            sheet_data = pd.DataFrame(buyers_info_sheet.values)
+            
+            columns = sheet_data.iloc[0]
+            df = sheet_data[1:]
+            df.columns = columns
+            
+            data = request.get_json()
+            token = data.get('token')
+            if not token:
+                return 'Token is missing', 400
+            
+            try:
+                idinfo = id_token.verify_oauth2_token(token, google_request.Request(), GOOGLE_CLIENT_ID)
+                
+                email = idinfo['email']
+                name = idinfo['name']
+                image = idinfo.get('picture', '')
+                
+                if email not in df['email'].values:     
+                    if image:
+                        image_response = requests.get(image)
+                        folder_path = current_app.config['UPLOAD_IMAGE']
+                        if image_response.status_code == 200:
+                            image_path = os.path.join(folder_path, f"{image.replace('https://lh3.googleusercontent.com/a/', '')}.jpg")
+                            with open(image_path, 'wb') as file:
+                                file.write(image_response.content)
+                        else:
+                            image_path = ''
+                    else:
+                        image_path = ''
+
+                    header = [cell.value for cell in buyers_info_sheet[1]]
+                    id_col = header.index('id')
+                    name_col = header.index('name')
+                    email_col = header.index('email')
+                    image_col = header.index('image')
+
+                    header_buyer = [cell.value for cell in buyers_sheet[1]]
+                    id_buyer_col = header.index('id')
+
+                    buyers_info_none_rows = [row for row in buyers_info_sheet.iter_rows() if all(cell.value is None for cell in row)]
+                    for row in buyers_info_none_rows:
+                        buyers_info_sheet.delete_rows(row[0].row)
+
+                    buyers_none_rows = [row for row in buyers_sheet.iter_rows() if all(cell.value is None for cell in row)]
+                    for row in buyers_none_rows:
+                        buyers_sheet.delete_rows(row[0].row)
+
+                    new_row = [None] * len(header)
+                     # get id
+                    last_row_id = None
+                    for row in buyers_info_sheet.iter_rows(min_row=2, max_col=1, max_row=buyers_info_sheet.max_row):
+                        cell_value = row[0].value
+                        if cell_value:
+                            last_row_id = cell_value
+
+                    if last_row_id:
+                        prefix, numeric_part = re.match(r'([^\d]+)(\d+)', last_row_id).groups()
+                        next_numeric_part = int(numeric_part) + 1
+                        new_row[id_col] = f'{prefix}{next_numeric_part}'
+                    else:
+                        new_row[id_col] = 'x1'
+
+                    new_row[name_col] = name
+                    new_row[email_col] = email
+                    new_row[image_col] = f"{image.replace('https://lh3.googleusercontent.com/a/', '')}.jpg"
+
+                    buyers_info_sheet.append(new_row)
+
+                    new_row_buyer = [None] * len(header_buyer)
+                    new_row_buyer[id_buyer_col] = new_row[id_col]
+                    buyers_sheet.append(new_row_buyer)
+                    wb.save(filename=file_path)
+                    
+                    new_user_info = {
+                        "id": new_row[id_col],
+                        "name": name,
+                        "email": email,
+                        "image": new_row[image_col]
+                    }
+                    return new_user_info, 200   
+                else:
+                    user = df[(df['email'] == email)]
+                    
+                    if not user.empty:
+                        user_info = user.iloc[0].to_dict()
+                        return user_info, 200
+                    else:
+                        return 'Không tìm thấy người dùng', 401
+                
+            except ValueError:
+                return 'Invalid token', 400
     
     @api.route('/login')
     class Login(Resource):
@@ -145,7 +252,6 @@ def register_routes(api: Api):
             
             header_buyer_sheet = [cell.value for cell in buyers_sheet[1]]
             id_buyer_col = header_buyer_sheet.index('id')
-            
             
             for row in buyers_info_sheet.iter_rows(min_row=2, values_only=True):
                 if (row[email_col] == emailOrPhone) or (row[phone_col] == emailOrPhone):
@@ -239,8 +345,7 @@ def register_routes(api: Api):
                     return Response(json_data, content_type="application/json; charset=utf-8")
         
                 return {"error": "User not found"}, 400
-
-            
+      
     @api.route('/update_user/<id>')
     class UpdateUser(Resource):
         @api.expect(data_model)
@@ -253,12 +358,24 @@ def register_routes(api: Api):
             buyers_sheet = wb['buyers']
             buyers_info_sheet = wb['buyers_info']
             
+            header = [cell.value for cell in buyers_info_sheet[1]]
+            email_col = header.index('email')
+            phone_col = header.index('phone_number')
+            
+            print(formData.get('email'), formData.get('phone_number'))
+            
+            for row in buyers_info_sheet.iter_rows(min_row=2, max_row=buyers_info_sheet.max_row):
+                if row[0].value != id:
+                    if row[email_col].value == formData.get('email'):
+                        return 'Email đã tồn tại', 400
+                    elif row[phone_col].value == formData.get('phone_number'):
+                        return 'Số điện thoại đã tồn tại', 400
+            
             # Find and update the row in 'buyers_info' sheet
             for row in buyers_info_sheet.iter_rows(min_row=2, max_row=buyers_info_sheet.max_row):
                 if row[0].value == id:
                     row[1].value = formData.get('name', row[1].value)
                     row[2].value = formData.get('email', row[2].value)
-                    # row[3].value = formData.get('password', row[3].value)
                     row[4].value = formData.get('phone_number', row[4].value)
                     row[5].value = formData.get('address', row[5].value)
                     row[6].value = formData.get('image', row[6].value)
