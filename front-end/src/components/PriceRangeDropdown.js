@@ -51,7 +51,7 @@ const PriceRangeDropdown = () => {
   ];
 
   return (
-    <Menu as='div' className='dropdown relative z-50'>
+    <Menu as='div' className='dropdown relative'>
       <Menu.Button
         onClick={() => setIsOpen(!isOpen)}
         className='dropdown-btn w-full text-left'
