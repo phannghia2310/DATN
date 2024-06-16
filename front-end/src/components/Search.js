@@ -16,7 +16,7 @@ const Search = () => {
   const { handleClick, resetSearch } = useContext(HouseContext);
 
   return (
-    <div className='px-[30px] py-1 max-w-[1170px] mx-auto flex flex-col lg:flex-col justify-between gap-4 lg:gap-x-3 relative lg:-top-4 lg:shadow-1 bg-white lg:bg-transparent lg:backdrop-blur rounded-lg'>
+    <div className='px-[30px] py-1 max-w-[1170px] mx-auto flex flex-col lg:flex-col justify-between gap-4 lg:gap-x-3 relative lg:-top-4 lg:shadow-1 bg-white lg:bg-transparent lg:backdrop-blur rounded-lg z-50'>
       <div className='flex flex-row items-center justify-center gap-4 lg:gap-x-3'>
         <PropertyDropdown />
         <SearchBox />

@@ -13,3 +13,7 @@ export const getHouseByMetaCode = (meta_code) => {
 export const getHousesFromModel = (id) => {
     return axios.get(`${API_URL}/get_houses_from_model/${id}`);
 };
+
+export const calculateAmortizationSchedule = ({loanAmount, annualInterestRate, loanTermInMonths}) => {
+    return axios.post(`${API_URL}/amortization-schedule`, {loanAmount, annualInterestRate, loanTermInMonths});
+};

@@ -16,6 +16,7 @@ from app.models import create_data_model
 from app.models import create_account_model
 from app.utils import assign_group
 from app.utils import add_code_to_callRule
+from app.utils import calculate_amortization_schedule
 
 GOOGLE_CLIENT_ID = "864707476707-u61028sfa4isftnerqaralk9df0tta05.apps.googleusercontent.com"
 
@@ -89,6 +90,42 @@ def register_routes(api: Api):
             data = df.to_dict(orient='records')
             data_json = json.dumps(data, ensure_ascii=False, indent=4)
             return Response(data_json, content_type="application/json; charset=utf-8", status=200)   
+        
+    @api.route('/amortization-schedule')
+    class AmortizationSchedule(Resource):
+        def post(self):
+            request_data = request.get_json()
+            
+            loan_amount = request_data.get('loanAmount')
+            annual_interest_rate = request_data.get('annualInterestRate')
+            loan_term_in_months = request_data.get('loanTermInMonths')
+
+            if not loan_amount or not annual_interest_rate or not loan_term_in_months:
+                return 'Missing required parameters', 400
+
+            try:
+                loan_amount = float(loan_amount)
+                annual_interest_rate = float(annual_interest_rate)
+                loan_term_in_months = int(loan_term_in_months)
+            except ValueError:
+                return 'Invalid parameters, must be numbers', 400
+
+            # Tính toán lịch trả nợ
+            amortization_schedule = calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term_in_months)
+
+            total_interest = sum(item['interest'] for item in amortization_schedule)
+            max_payment_info = max(amortization_schedule, key=lambda x: x['total_payment'])
+            total_payment = sum(item['total_payment'] for item in amortization_schedule)
+            interest_to_payment_ratio = total_interest / total_payment
+            
+            return {
+                'Total Interest': total_interest,
+                'Max Monthly Payment': max_payment_info['total_payment'],
+                'Max Payment Month': max_payment_info['month'],
+                'Total Payment': total_payment,
+                'Interest to Payment Ratio': interest_to_payment_ratio,
+                'Schedule': amortization_schedule
+            }, 200
         
     @api.route('/google_login')
     class GoogleLogin(Resource):
@@ -361,8 +398,6 @@ def register_routes(api: Api):
             header = [cell.value for cell in buyers_info_sheet[1]]
             email_col = header.index('email')
             phone_col = header.index('phone_number')
-            
-            print(formData.get('email'), formData.get('phone_number'))
             
             for row in buyers_info_sheet.iter_rows(min_row=2, max_row=buyers_info_sheet.max_row):
                 if row[0].value != id:

@@ -150,7 +150,7 @@ const ChangePasswordPopup = ({ user }) => {
           </span>
           <button
             onClick={(event) => handleClose(event)}
-            className="hover:text-red-800 hover:bg-red-800 transition duration-300 px-[5px] rounded-lg text-3xl"
+            className="hover:text-red-800 hover:bg-red-200 transition duration-300 px-[5px] rounded-lg text-3xl"
           >
             <IoMdClose />
           </button>

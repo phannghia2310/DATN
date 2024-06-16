@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -6,13 +7,42 @@ import { Icon } from "@iconify/react";
 import { BiBed, BiBath } from "react-icons/bi";
 import { IoLocation } from "react-icons/io5";
 
-const House = ({ house }) => {
+const House = ({
+  house,
+  isSelected,
+  onSelect,
+  showCompareButton,
+  selectedHouses,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (selectedHouses.length === 0) {
+      navigate(`/house-details/${house.meta_code}`);
+    } else {
+      onSelect();
+    }
+  };
+
+  const handleSelect = (e) => {
+    e.stopPropagation();
+    onSelect();
+  };
+
   let houseName;
   !house.overall_info
     ? (houseName = "")
     : (houseName = house.overall_info.split("\n")[0]);
   return (
-    <div className="bg-white shadow-1 p-5 rounded-2xl w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition">
+    <div
+      className={`relative ${
+        isSelected ? "bg-gray-200" : "bg-white"
+      } shadow-1 p-5 rounded-2xl w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
+    >
       <div
         className="text-black font-bold text-xl mb-2 text-wrap overflow-hidden"
         style={{
@@ -61,7 +91,7 @@ const House = ({ house }) => {
             .toString()
             .replace(/\D/g, "")
             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-          NVĐ
+          VNĐ
         </div>
         <div>
           {house.housePerformance ? (
@@ -106,6 +136,16 @@ const House = ({ house }) => {
           )}
         </div>
       </div>
+      {showCompareButton && (
+        <button
+          onClick={handleSelect}
+          className={`absolute right-0 left-0 bottom-0 h-[100px] bg-gradient-to-t from-red-800 to-red-800/0 text-white text-[17px] p-2 rounded-b-lg shadow-md transition-transform duration-500 transform ${
+            isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+          }`}
+        >
+          So sánh với
+        </button>
+      )}
     </div>
   );
 };

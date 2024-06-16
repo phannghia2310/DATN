@@ -149,3 +149,103 @@
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
+
+# import pandas as pd
+
+# file1_path = 'D:\\DATN\\model\\testOutput\\cust_x1.xlsx'
+# file2_path = 'C:\\Users\\phank\\Downloads\\HuyNT_Thesis_RecSys_HandOver\\HuyNT_Thesis_RecSys_HandOver\\testOutput\\cust_x1.xlsx'
+
+# df1 = pd.read_excel(file1_path)
+# df2 = pd.read_excel(file2_path)
+
+# # Ensure both dataframes have the same columns and shape
+# if df1.shape != df2.shape:
+#     print("The files have different shapes.")
+# else:
+#     differences = []
+#     for row in range(df1.shape[0]):
+#         for col in df1.columns:
+#             if df1.at[row, col] != df2.at[row, col]:
+#                 differences.append((row, col, df1.at[row, col], df2.at[row, col]))
+
+# # Print the differences
+# print("Differences found:")
+# for diff in differences:
+#     print(f"Row: {diff[0]}, Column: {diff[1]}, File1: {diff[2]}, File2: {diff[3]}")\
+    
+
+    
+import pandas as pd
+from openpyxl import load_workbook
+
+# Load the data
+house_df = pd.read_excel('D:\\DATN\\model\\houseAll.xls')
+data = pd.ExcelFile('D:\\DATN\\model\\data.xlsx')
+buyers = data.parse('buyers')
+
+def get_house_price(house_id):
+    house = house_df[house_df['meta_code'] == house_id]
+    price = house['price'].values[0]
+    return price
+
+# Input buyer and house details
+loan_amount = int(input('Nhập số tiền vay: '))
+house_id = input('Nhập id nhà: ')
+
+# Fetch available amount and property value
+available_amount = loan_amount
+property_value = get_house_price(house_id)
+
+# Input loan details
+annual_rate = int(input('Nhập lãi suất hàng năm (%): '))  # e.g., 12
+loan_term_months = int(input('Nhập thời hạn vay (tháng): '))     # e.g., 20
+# loan_term_months = loan_term_years * 12
+
+def calculate_reducing_balance_loan_schedule(principal, annual_rate, months):
+    monthly_rate = annual_rate / 12 / 100
+    monthly_principal = principal / months
+    
+    schedule = []
+    remaining_principal = principal
+    
+    for month in range(1, months + 1):
+        monthly_interest = remaining_principal * monthly_rate
+        total_payment = monthly_principal + monthly_interest
+        schedule.append({
+            'Month': month,
+            'Principal': monthly_principal,
+            'Interest': monthly_interest,
+            'Total Payment': total_payment,
+            'Remaining Principal': remaining_principal - monthly_principal
+        })
+        remaining_principal -= monthly_principal
+    
+    return schedule
+
+def calculate_loan_summary(principal, annual_rate, months):
+    schedule = calculate_reducing_balance_loan_schedule(principal, annual_rate, months)
+    total_interest = sum(item['Interest'] for item in schedule)
+    max_payment_info = max(schedule, key=lambda x: x['Total Payment'])
+    total_payment = sum(item['Total Payment'] for item in schedule)
+    interest_to_payment_ratio = total_interest / total_payment
+    
+    return {
+        'Total Interest': total_interest,
+        'Max Monthly Payment': max_payment_info['Total Payment'],
+        'Max Payment Month': max_payment_info['Month'],
+        'Total Payment': total_payment,
+        'Interest to Payment Ratio': interest_to_payment_ratio,
+        'Schedule': schedule
+    }
+
+# Check if loan is needed and calculate loan summary
+
+loan_amount = property_value - available_amount
+loan_summary = calculate_loan_summary(principal=loan_amount, annual_rate=annual_rate, months=loan_term_months)
+
+print(f'Giá nhà là {property_value} VND.')
+print(f"Tiền vay: {available_amount} VND.")
+print(f"Tổng lãi: {loan_summary['Total Interest']:.2f} VND")
+print(f"Tháng phải trả cao nhất là tháng {loan_summary['Max Payment Month']} với số tiền là {loan_summary['Max Monthly Payment']:.2f} VND.")
+print(f"Tổng tiền phải trả: {loan_summary['Total Payment']:.2f} VND")
+print(f"Tỉ lệ lãi phải trả trên khoản vay: {loan_summary['Interest to Payment Ratio']:.2f}")
