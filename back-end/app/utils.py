@@ -3,10 +3,10 @@ import nbformat as nbf
 import papermill as pm
 
 def assign_group(data):
-    age = int(data['age'])
-    marital_status = int(data['is_married'])
-    no_child = int(data['no_child'])
-    month_income = int(data['month_income'].replace(',', ''))
+    age = int(data.get('age'))
+    marital_status = int(data.get('is_married'))
+    no_child = int(data.get('no_child'))
+    month_income = int(data.get('month_income').replace(',', ''))
     # month_income = int(data['month_income'])
     
     if 25 <= age <= 32 and marital_status == 0 and no_child == 0 and month_income > 20000000:
@@ -94,26 +94,6 @@ def add_code_to_outputEvaluation(notebook_path, data, row):
     pm.execute_notebook(notebook_path, notebook_path)
 
 def calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term_in_months):
-    # monthly_interest_rate = annual_interest_rate / 12 / 100
-    # monthly_payment = loan_amount * monthly_interest_rate / (1 - (1 + monthly_interest_rate) ** -loan_term_in_months)
-    
-    # balance = loan_amount
-    # amortization_schedule = []
-    
-    # for month in range(1, loan_term_in_months + 1):
-    #     interest = balance * monthly_interest_rate
-    #     principal = monthly_payment - interest
-    #     balance -= principal
-        
-    #     amortization_schedule.append({
-    #         'month': month,
-    #         'principal': principal,
-    #         'interest': interest,
-    #         'balance': balance,
-    #     })
-        
-    # return amortization_schedule
-    
     monthly_rate = annual_interest_rate / 12 / 100
     monthly_principal = loan_amount / loan_term_in_months
     

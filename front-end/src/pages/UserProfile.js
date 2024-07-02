@@ -13,7 +13,7 @@ import {
   OutlinedInput,
 } from "@mui/material";
 
-import { UpdateUser, UploadImage } from "../api/userApi";
+import { GetUser, UpdateUser, UploadImage } from "../api/userApi";
 
 const UserProfile = () => {
   const { user } = useContext(UserContext);
@@ -28,6 +28,7 @@ const UserProfile = () => {
     id: "",
     name: "",
     age: "",
+    group: "",
     image: "",
     email: "",
     phone: "",
@@ -62,6 +63,7 @@ const UserProfile = () => {
         id: user.id,
         name: user.name,
         age: user.age,
+        group: user.group,
         image: user.image,
         email: user.email,
         phone: user.phone_number,
@@ -241,11 +243,12 @@ const UserProfile = () => {
     event.preventDefault();
     
     if(validateUpdate()) {
-      const { email, phone, children, ...data } = formValues;
+      const { email, group, phone, children, ...data } = formValues;
       const file = selectedFile;
       const formData = {
         ...data,
         email: email,
+        group: group,
         phone_number: phone,
         is_married: isMarried === "Đã kết hôn" ? 1 : 0,
         no_child: parseInt(children),
@@ -262,8 +265,10 @@ const UserProfile = () => {
           console.log(imageResponse);
         }
 
+        const userResponse = await GetUser(user.id);
+        console.log(userResponse);
         localStorage.removeItem('user');
-        localStorage.setItem('user', JSON.stringify(formData));
+        localStorage.setItem('user', JSON.stringify(userResponse.data));
 
         window.location.reload();
       } catch (err) {

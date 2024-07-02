@@ -4,8 +4,10 @@ import { Menu } from "@headlessui/react";
 import { UserContext } from "./UserContext";
 import DefaultLogo from '../assets/img/user/default.png';
 import { useNavigate } from "react-router-dom";
+import { HouseContext } from "./HouseContext";
 
 const UserDropdown = () => {
+    const { fetchHouses } = useContext(HouseContext)
     const { user, setUser } = useContext(UserContext);
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
@@ -13,6 +15,7 @@ const UserDropdown = () => {
     const handleLogout = () => {
         localStorage.removeItem('user');
         setUser(null);
+        fetchHouses();
         navigate('/');
     };
 
